@@ -187,3 +187,37 @@ async function handleStarEvent(p) {
 }
 
 app.listen(PORT, () => console.log(`🚀 App Server running on port ${PORT}`));
+
+// ═══════════════════════════════════════════════════════════════
+// Render keep-alive (self-ping) to prevent cold starts
+// ═══════════════════════════════════════════════════════════════
+//
+// Render automatically exposes your public URL via RENDER_EXTERNAL_URL.
+// We hit the root health-check endpoint ("/") on a fixed interval.
+//
+// You can tune / disable via env:
+//   - KEEPALIVE_ENABLED      (default: "true")
+//   - KEEPALIVE_INTERVAL_MS  (default: 300000 = 5 minutes)
+//
+const KEEPALIVE_ENABLED = (process.env.KEEPALIVE_ENABLED ?? 'true').toLowerCase() === 'true';
+const KEEPALIVE_URL = process.env.RENDER_EXTERNAL_URL || null;
+const KEEPALIVE_INTERVAL_MS = Number(process.env.KEEPALIVE_INTERVAL_MS || 300000);
+
+if (KEEPALIVE_ENABLED && KEEPALIVE_URL && Number.isFinite(KEEPALIVE_INTERVAL_MS) && KEEPALIVE_INTERVAL_MS > 0) {
+    const targetUrl = `${KEEPALIVE_URL}/`;
+
+    const pingSelf = async () => {
+        try {
+            const res = await axios.get(targetUrl, { timeout: 5000 });
+            console.log(`🟢 Keep-alive ping @ ${new Date().toISOString()} -> ${res.status}`);
+        } catch (err) {
+            console.error(`🔴 Keep-alive failed @ ${new Date().toISOString()}:`, err.message);
+        }
+    };
+
+    // Fire and forget – don't await it here
+    setInterval(pingSelf, KEEPALIVE_INTERVAL_MS);
+    console.log(`⏱  Render keep-alive enabled -> ${targetUrl} every ${KEEPALIVE_INTERVAL_MS}ms`);
+} else {
+    console.log('⏹  Render keep-alive disabled (missing RENDER_EXTERNAL_URL or KEEPALIVE_ENABLED=false)');
+}
