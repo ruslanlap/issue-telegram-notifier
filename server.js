@@ -1,4 +1,5 @@
 const express = require('express');
+require('dotenv').config();
 const crypto = require('crypto');
 const axios = require('axios');
 const { App } = require('octokit');
