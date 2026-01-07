@@ -12,5 +12,13 @@ services:
         sync: false
       - key: WEBHOOK_SECRET
         sync: false
+      - key: GITHUB_APP_ID
+        sync: false
+      - key: GITHUB_PRIVATE_KEY
+        sync: false
+      - key: KEEPALIVE_ENABLED
+        value: "true"
+      - key: KEEPALIVE_INTERVAL_MS
+        value: "300000"
       - key: PORT
         value: 3000
